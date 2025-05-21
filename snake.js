@@ -1,6 +1,6 @@
 const canvas = document.getElementById('snake');
 const ctx = canvas.getContext('2d');
-const gridSize = 30;
+const gridSize = 20;
 let snake = [{x: 8, y: 10}];
 let direction = {x: 1, y: 0};
 let food = {x: 15, y: 10};
