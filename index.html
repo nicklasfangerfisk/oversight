@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Waynes world</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Supabase JS client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.min.js"></script>
     <style>
         header {
             background: #222;
@@ -30,6 +32,30 @@
         body {
             margin-bottom: 60px;
         }
+        #products-list table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+            background: #222;
+            color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #products-list th, #products-list td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #444;
+            text-align: left;
+        }
+        #products-list th {
+            background: #333;
+            font-size: 1.1rem;
+        }
+        #products-list tr:last-child td {
+            border-bottom: none;
+        }
+        #products-list tr:hover {
+            background: #292929;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +69,8 @@
             <span style="color:#fff;font-size:1rem;">Use arrow keys to play!</span>
         </div>
     </div>
+    <div id="materials-list" style="max-width:600px;margin:40px auto 0 auto;"></div>
+    <div id="products-list" style="max-width:800px;margin:40px auto 0 auto;"></div>
     <footer>
         <button id="easter-egg-btn" style="background:#0f0;color:#111;border:none;padding:8px 18px;border-radius:6px;font-size:1rem;cursor:pointer;float:right;margin-right:32px;">?</button>
         <p style="margin:0;">&copy; 2025 Waynes World. All rights reserved - your guy 3</p>
@@ -59,6 +87,51 @@
         closeBtn.onclick = () => {
             dialog.style.display = 'none';
         };
+    </script>
+    <script>
+        // Replace with your own Supabase project URL and anon key
+        const SUPABASE_URL = 'https://db.tfzvtzqybgbzxcxozdes.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTcxNjMwNTQwNSwiZXhwIjoxODMxODgxNDA1fQ.2QwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQwQw';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Example: Fetch and display materials from Supabase
+        async function fetchMaterials() {
+            const { data, error } = await supabase.from('materials').select('*');
+            const container = document.getElementById('materials-list');
+            if (error) {
+                container.innerHTML = '<p style="color:red">Error loading materials: ' + error.message + '</p>';
+                return;
+            }
+            if (data.length === 0) {
+                container.innerHTML = '<p>No materials found.</p>';
+                return;
+            }
+            container.innerHTML = '<ul>' + data.map(m => `<li><b>${m.name}</b>: ${m.description || ''}</li>`).join('') + '</ul>';
+        }
+        document.addEventListener('DOMContentLoaded', fetchMaterials);
+    </script>
+    <script>
+        async function fetchProducts() {
+            const { data, error } = await supabase.from('products').select('*');
+            const container = document.getElementById('products-list');
+            if (error) {
+                container.innerHTML = '<p style="color:red">Error loading products: ' + error.message + '</p>';
+                return;
+            }
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>No products found.</p>';
+                return;
+            }
+            // Build table headers dynamically
+            const columns = Object.keys(data[0]);
+            let html = '<table><thead><tr>';
+            html += columns.map(col => `<th>${col.charAt(0).toUpperCase() + col.slice(1)}</th>`).join('');
+            html += '</tr></thead><tbody>';
+            html += data.map(row => '<tr>' + columns.map(col => `<td>${row[col] ?? ''}</td>`).join('') + '</tr>').join('');
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        document.addEventListener('DOMContentLoaded', fetchProducts);
     </script>
 </body>
 </html>
